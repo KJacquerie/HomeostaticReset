@@ -5,6 +5,7 @@ All the data is gathered with Julia (.jl) files and all the postprocessing is do
 # Julia (.jl) files
 All computational experiments are launched thanks to a *Simu_... .jl* calling a function with the differential equations of the conductance based models (neuronal model) and the synaptic weight change (plasticity rules) found in *model_... .jl*. The common methodology/parameters for all codes are explained below:
 
+
 ## Simu_ ... .jl (main code) 
 
 #### Simulation parameters
