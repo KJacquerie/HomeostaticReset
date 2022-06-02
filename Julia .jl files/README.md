@@ -1,5 +1,6 @@
 
 # Julia (.jl) files
+<span style="color:blue">some *blue* text</span>.
 All computational experiments are launched thanks to a *Simu_... .jl* calling a function with the differential equations of the conductance based models (neuronal model) and the synaptic weight change (plasticity rules) found in *model_... .jl*. The common methodology/parameters for all codes are explained below:
 
 ## Simu_ ... .jl (main code) 
