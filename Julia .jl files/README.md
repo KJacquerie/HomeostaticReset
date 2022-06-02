@@ -1,6 +1,6 @@
 # Methodology
 
-Except the scenario codes for **Figure 1B* and network codes for **Figure 3C**, all .jl files are sorted by their model types : 
+Except the scenario codes for **Figure 1B** and network codes for **Figure 3C**, all .jl files are sorted by their model types : 
 
 #### Phenomenological models 
 * Pair-based model
