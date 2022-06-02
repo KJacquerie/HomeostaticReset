@@ -68,7 +68,7 @@ Note: j=1-> presynaptic cell ; j = 2-> inhibitory cell ; j = 3-> postsynaptic ce
 * *Simu_????????????_..* and *model_STDP_..* for **Figure 3B** (simulating 10 different networks with different ionic conductances (10% variability) for each cell.) 
 * *Simu_network* and *model_network* for **Figure 3C** (simulating a 6cells feedforward network with 3 presynaptic cells connected to 3 postsynaptic cells governed by the same inhibitory cell. All initial synaptic weights between pre-post cells are randomly initialized and cells show 30% variability in their $g_{CaT}$ and $g_{KCa} conductances.)
 
-## Model used
+## Models used
 
 Except the scenario codes for **Figure 1B** and network codes for **Figure 3C**, all .jl files are sorted by their model types : 
 
