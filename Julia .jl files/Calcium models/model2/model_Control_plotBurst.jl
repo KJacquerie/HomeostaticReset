@@ -1,0 +1,239 @@
+boltz(V::Float64,A::Float64,B::Float64) = 1/(1 + exp((V+A)/B))
+tauX(V::Float64,A::Float64,B::Float64,D::Float64,E::Float64) = A - B/(1+exp((V+D)/E))
+mNainf(V::Float64) = boltz(V,35.5,-5.29)
+taumNa(V::Float64) = tauX(V,1.32,1.26,120.,-25.)
+hNainf(V::Float64) = boltz(V,48.9,5.18)
+tauhNa(V::Float64) = (0.67/(1+exp((V+62.9)/-10.0)))*(1.5 + 1/(1+exp((V+34.9)/3.6)))
+mKdinf(V::Float64) = boltz(V,12.3,-11.8)
+taumKd(V::Float64) = tauX(V,7.2,6.4,28.3,-19.2)
+mCaTinf(V::Float64) = boltz(V,67.1,-7.2)
+taumCaT(V::Float64) = tauX(V,21.7,21.3,68.1,-20.5)
+hCaTinf(V::Float64) = boltz(V,80.1,5.5)
+tauhCaT(V::Float64) = 2*tauX(V,205.,89.8,55.,-16.9)
+
+mHinf(V::Float64) = boltz(V,80.,6.)
+taumH(V::Float64) = tauX(V,272.,-1149.,42.2,-8.73)
+mKCainf(Ca::Float64) = (Ca/(Ca+Kd))^2
+Tm(V::Float64) = 1/(1+exp(-(V-2)/5))
+
+ICaT(V::Float64,mCaT::Float64,hCaT::Float64,gCaT::Float64) = gCaT*mCaT^3*hCaT*(V-VCa)
+
+function dV(gNa::Float64, gKd::Float64, gl::Float64, V::Float64, mNa::Float64, hNa::Float64, mKd::Float64, mCaT::Float64, hCaT::Float64, mH::Float64, Ca::Float64, Iapp::Float64, Istep::Float64, gCaT::Float64, gH::Float64, gKCa::Float64)
+  (dt)*(1/C)*(-gNa*mNa^3*hNa*(V-VNa) -gKd*mKd^4*(V-VK) -gl*(V-Vl) -ICaT(V,mCaT,hCaT,gCaT)-gKCa*mKCainf(Ca)*(V-VK) -gH*mH*(V-VH) +Iapp +Istep)
+end
+
+
+dmNa(V::Float64,mNa::Float64) = (dt)*((1/taumNa(V))*(mNainf(V) - mNa))
+dhNa(V::Float64,hNa::Float64) = (dt)*((1/tauhNa(V))*(hNainf(V) - hNa))
+dmKd(V::Float64,mKd::Float64) = (dt)*((1/taumKd(V))*(mKdinf(V) - mKd))
+dmCaT(V::Float64,mCaT::Float64) = (dt)*((1/taumCaT(V))*(mCaTinf(V) - mCaT))
+dhCaT(V::Float64,hCaT::Float64) = (dt)*((1/tauhCaT(V))*(hCaTinf(V) - hCaT))
+dmH(V::Float64,mH::Float64) = (dt)*((1/taumH(V))*(mHinf(V) - mH))
+dCa(V::Float64,mCaT::Float64,hCaT::Float64,Ca::Float64,gCaT::Float64,k1::Float64,k2::Float64) = (dt)*(-k1*ICaT(V,mCaT,hCaT,gCaT) -k2*Ca)
+
+dAMPA(V::Float64,AMPA::Float64) = (dt)*(1.1*Tm(V)*(1-AMPA)-0.19*AMPA)
+dGABAA(V::Float64,GABAA::Float64) = (dt)*(0.53*Tm(V)*(1-GABAA)-0.18*GABAA)
+dGABAB(V::Float64,GABAB::Float64) = (dt)*(0.016*Tm(V)*(1-GABAB)-0.0047*GABAB)
+
+
+function simulateTOY_ncells(ncells::Int64,nEcells::Int64,nIcells::Int64,IappE::Float64,IappI::Float64,TstepEinit::Int64,TstepEfinal::Int64,IstepE::Float64,TstepIinit1::Int64,TstepIinit2::Int64,TstepIinit3::Int64,TstepIinit4::Int64,TstepIfinal::Int64,IstepI1::Float64,IstepI2::Float64,IstepI3::Float64,IstepI4::Float64, gEC::Float64, freq::Float64, delay_pre::Float64)
+
+  # Initial conditions
+  V=-60*ones(ncells)
+  Vprev=-60*ones(ncells)
+  x::Float64 = 0.
+  y::Float64 = 0.
+  mNa=mNainf(V[1])*ones(ncells)
+  hNa=hNainf(V[1])*ones(ncells)
+  mKd=mKdinf(V[1])*ones(ncells)
+  mCaT=mCaTinf(V[1])*ones(ncells)
+  hCaT=hCaTinf(V[1])*ones(ncells)
+  mH=mHinf(V[1])*ones(ncells)
+  Ca=((-k1_E/k2_E)*ICaT(V[1],mCaT[1],hCaT[1],gCaT_E[1]))*ones(ncells)
+  CaT_plot = zeros(Tdt, ncells)
+
+  AMPA=zeros(ncells)
+  GABAA = zeros(ncells)
+  GABAB = zeros(ncells)
+  sSYN = zeros(ncells)
+
+  cpre = zeros(Tdt)
+  cpre_var =0.
+  cpre_prev=0.
+  cpost = zeros(Tdt)
+  cpost_var = 0.
+  cpost_prev = 0.
+
+  ca_var =0.
+  c_plot = zeros(Tdt)
+
+  event_pre=0.
+  event_post=0.
+
+  spk_pre = zeros(Tdt)
+  spk_post = zeros(Tdt)
+
+  Vold = zeros(convert(Int64, floor(D_pre/dt+1)),1)
+
+  ww=zeros(Tdt)
+  ww_var = w_init
+  VV = zeros(Tdt,ncells)
+
+  # Step start and stop values
+  TstartE::Int64 = convert(Int64,TstepEinit/dt)
+  TstopE::Int64 = convert(Int64,TstepEfinal/dt)
+  TstartI1::Int64 = convert(Int64,TstepIinit1/dt)
+  TstartI2::Int64 = convert(Int64,TstepIinit2/dt)
+  TstartI3::Int64 = convert(Int64,TstepIinit3/dt)
+  TstartI4::Int64 = convert(Int64,TstepIinit4/dt)
+  TstopI::Int64   = convert(Int64,TstepIfinal/dt)
+
+
+  for z = 1:Tdt
+
+    for j = 1:ncells
+      #ll = copy(lncells[j])
+
+      # Excitatory cell: ode for the membrane voltage dV/dt
+      if j==1#(j<=nEcells)
+        Iapp = IappE
+
+        z_delayed = z*dt + delay_pre
+        if (mod(z_delayed, freq) > freq - duration && z_delayed >=0)#  && z<TstartE )
+          Iappstep = IstepE
+        else
+          Iappstep = 0.
+        end
+
+        if z >= TstartE && z< TstopE
+          Iappstep = IstepE2
+        end
+
+        V[j] += dV(gNavec_E[j], gKdvec_E[j], glvec_E[j], V[j], mNa[j], hNa[j], mKd[j], mCaT[j], hCaT[j], mH[j], Ca[j], Iapp, Iappstep, gCaTvec_E[j], gHvec_E[j], gKCavec_E[j])
+        Ca[j] += dCa(Vprev[j],mCaT[j],hCaT[j],Ca[j],gCaTvec_E[j],k1vec_E[j], k2vec_E[j])
+
+      end
+
+
+      # Inhibitory cell: ode for the membrane voltage dV/dt
+      if j==2 #(j > nEcells && j <= nEcells+nIcells)
+        Iapp = IappI
+        if z >= TstartI1 && z< TstartI2
+          Iappstep = IstepI1
+        elseif z >= TstartI2 && z< TstartI3
+          Iappstep = IstepI2
+        elseif z >= TstartI3 && z< TstartI4
+          Iappstep = IstepI3
+        elseif z >= TstartI4 && z< TstopI
+          Iappstep = IstepI4
+        else
+          Iappstep = 0.
+        end
+        V[j] += dV(gNavec_I[j], gKdvec_I[j], glvec_I[j], V[j], mNa[j], hNa[j], mKd[j], mCaT[j], hCaT[j], mH[j], Ca[j], Iapp, Iappstep, gCaTvec_I[j], gHvec_I[j], gKCavec_I[j])
+        Ca[j] += dCa(Vprev[j],mCaT[j],hCaT[j],Ca[j],gCaTvec_I[j],k1vec_I[j], k2vec_I[j])
+
+      end
+
+      #  Cortical cell: ode for the membrane voltage dV/dt
+      if j==3#( j > nIcells+nEcells && j <=ncells)
+        Iapp = IappC
+        z_delayed = z*dt
+
+        if (mod(z_delayed, freq) > freq - duration && z_delayed >=0)# && z<tStartC/dt )
+          Iappstep = IstepC
+        else
+          Iappstep = 0.
+        end
+
+        if (z >= tStartC/dt && z< tStopC/dt)
+          Iappstep = IstepC2
+        end
+
+        V[j] += dV(gNavec_I[j], gKdvec_I[j], glvec_I[j], V[j], mNa[j], hNa[j], mKd[j], mCaT[j], hCaT[j], mH[j], Ca[j], Iapp, Iappstep, gCaTvec_I[j], gHvec_I[j], gKCavec_I[j])
+        Ca[j] += dCa(Vprev[j],mCaT[j],hCaT[j],Ca[j],gCaTvec_I[j],k1vec_I[j], k2vec_I[j])
+      end
+
+
+      # E cell receives inhibitory current from I cell
+        if j == 1
+          V[j] += (dt)*(1/C)*(-gIEGABAA*GABAA[2]*(Vprev[j]+70))
+          V[j] += (dt)*(1/C)*(-gIEGABAB*GABAB[2]*(Vprev[j]+85))
+          #=
+          if(V[1]>=0 && Vprev[1]<0)
+            count_pre+=1
+          end
+          =#
+
+          if(z> (D_pre/dt+1) )
+            if(Vold[end-1]>=0 && Vold[end]<0)
+              event_pre=1.
+            else
+              event_pre=0.
+            end
+          end
+          Vold[2:end] = Vold[1:end-1]
+          Vold[1] = copy(V[1])
+        end
+
+        # Inhibition from I to C
+        if j == 3
+          V[j] += (dt)*(1/C)*(-gICGABAA*GABAA[2]*(Vprev[j]+70))
+          V[j] += (dt)*(1/C)*(-gICGABAB*GABAB[2]*(Vprev[j]+85))
+
+        # Excitation from E to C
+          V[j] += (dt)*(1/C)*(-gEC*ww_var*AMPA[1]*(Vprev[j]-0))
+
+          if(V[j]>=0. && Vprev[j]<0.)
+            event_post=1.
+            #count_post +=1
+          else
+            event_post=0.
+          end
+        end
+
+      # Update of the gating variables
+      mNa[j]  += dmNa(Vprev[j],mNa[j])
+      hNa[j]  += dhNa(Vprev[j],hNa[j])
+      mKd[j]  += dmKd(Vprev[j],mKd[j])
+      mCaT[j] += dmCaT(Vprev[j],mCaT[j])
+      hCaT[j] += dhCaT(Vprev[j],hCaT[j])
+      mH[j]   += dmH(Vprev[j],mH[j])
+
+      AMPA[j]  += dAMPA(Vprev[j],AMPA[j])
+      GABAA[j] += dGABAA(Vprev[j],GABAA[j])
+      GABAB[j] += dGABAB(Vprev[j],GABAB[j])
+
+      Vprev = copy(V)
+    end
+    cpre_var  += (dt)*(1)*(-cpre_prev/tau_Ca) +event_pre*C_Pre
+    cpost_var += (dt)*(1)*(-cpost_prev/tau_Ca)+event_post*C_Post#+ eta_lin*event_post*cpre_prev
+
+    if(z>TstartE)
+      if(ca_var>= theta_p)
+        ww_var +=(dt)*(1/tauw_p)*(Omega_p - ww_var)
+      elseif(ca_var>=theta_d && ca_var<theta_p)
+        ww_var +=(dt)*(1/tauw_d)*(Omega_d - ww_var)
+      else
+        ww_var +=(dt)*0.
+      end
+    end
+
+    ca_var     = cpre_prev+cpost_prev
+    cpre_prev  = cpre_var
+    cpost_prev = cpost_var
+
+    ww[z] = copy(ww_var)
+
+    cpre_prev = cpre_var
+    cpost_prev = cpost_var
+    cpre[z]   = copy(cpre_var)
+    cpost[z]  = copy(cpost_var)
+    c_plot[z]  = cpre[z] + cpost[z]
+    ww[z] = copy(ww_var)
+    VV[z,:] = copy(V')
+    CaT_plot[z,:] = copy(Ca')
+  end
+
+
+  return  VV, cpre, cpost, c_plot, spk_pre, spk_post, ww, CaT_plot
+end
