@@ -1,4 +1,4 @@
-# TITLE
+# Description of the Matlab codes used to generate the images of the Article
 
 
 * * Datasheet_plot_STDP.m *
@@ -41,25 +41,36 @@ It uses the function *function_plot_wtime_Article.m* to display the graph.
 —> Resulting figures are available in the folder Fig3/Fig3_wtime
 
 * *Fig3B_varibility.m*
+It computes the mean of the synaptic weight evolution computed in 10 circuits with variabilities. 
 > moyenne les données des 10 circuits pour un courant 
 > avec l’évolution de la moyenne au cours du temps pour les diff w0
 —> save dans Fig3_wtime
 
-Fig3C_Network.m (plot w(t) et les traces) 
-> aucune fonction 
-—> prend les données dans le dossier Network_heterogeneous
-—> save dans Fig3_ntk
+* *Fig3C_Network.m (plot w(t) et les traces)*
+It uses the data from the Julia .jl files/Network_heterogeneous/traceX (X indicates the number of the considered network).
+--> Resulting figures are available in Fig3/Fig3_ntk.
 
-Fig4_wtime_burst (single trace de V en reset et sat)
-> function_plot_wtime_Oneline.m
+* *Fig4_wtime_burst *
+Function to obtain the homeostatic reset and the saturation curve shown in Figure 4.
+It uses the function *function_plot_wtime_Oneline.m* to display only one curve (from the Figure 3). 
+--> Resulting figures are available in Fig4
 
-Fig4_temporel_phenom.m
-> aucune fonction simplement des zooms sur w(t)
-Fig4_temporel_calcium.m
+* * Fig4_temporel_calcium.m*
+Function to obtain the zoom of the calcium traces as well as a zoom in the synaptic weight evolution to explain intuitively the homeostatic reset mechanism in calcium-based models.
+--> It saves the resulting figures in Fig4
 
+* *Fig4_temporel_phenom.m*
+Function to obtain the zoom of the pre and postsynaptic traces as well as a zoom in the synaptic weight evolution to explain intuitively the homeostatic reset mechanism in phenomenological models.
+--> It saves the resulting figures in Fig4
 
-SI_plot_Vburst.m
-—> pour obtenir les figures supplémentaires et les traces des 8 bursts patterns.
+* *SI_plot_Vburst.m*
+Function to provide the membrane potential evolution for 8 different levels of NMOD.
+--> It saves the resulting figures in Fig_SI
 
-plot_V.m
-—> obtenir la trace V de la Fig 2 (trace de SJO)
+* *SI_wf.m*
+Function that compares the frequency-rate in a pairing protocol for 75 pulses (as done in [Graupner,2016]) and 7x15 with a period of silence (as done in [Sjostrom,2001]).
+--> It saves the resulting figures in Fig_SI/75vsSJO.eps
+
+* *plot_V.m*
+Function that plots the evolution of the membrane potential. For example, it was used to show the frequency-dependency pairing protocol in Fig2
+—> Resulting figures are saved in the related Fig folders. 
