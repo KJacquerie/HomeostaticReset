@@ -77,19 +77,11 @@ Except the scenario codes for **Figure 1B** and network codes for **Figure 3C**,
 * Triplet models 
 
 #### Calcium models 
-* model 1 : 
-* model 2: 
-* model 3: 
-* model 4: 
-* model 5:
-* model 6: 
-* model 7: 
-* model 8:
-* model 9: 
-* model 10:
-* model 11: 
-* model 12:
-* model 13: 
-* model 14: 
-
+* **model 1** : Calcium-based synaptic rule with two-triggered thresholds of potentiation and depression. (*Graupner and Brunel, 2012*)
+* **model 2 & 3**: *Graupner and Brunel, 2012* model with calcium-dependant time-constant and steady-state values with the set of parameters of the cortex (**model 2**) and the hippocampus (**model 3**).
+* **model 4 & 5**: *Graupner and Brunel, 2012* model with the set of parameters of the cortex (**model 4**) and the hippocampus (**model 5**). 
+* **model 6**: Calcium-dependent plasticity rule with a continuous function of the calcium concentration for the cortex. (*Shouval, Bear and Cooper, 2002*). 
+* **model 7**: Calcium-dependent plasticity rule with coupling between the synaptic weight and the calcium influx. (*Deperrois and Graupner, 2020*)
+* **model 8**:  Calcium-dependent plasticity rule with coupling between the synaptic weight and the calcium influx and a short-term depression at the presynaptic site (*Deperrois and Graupner, 2020*).
+* **model 9, 10, 11, 12, 13, 14**: Calcium-based plasticity rule with hard bounds. ...
  
