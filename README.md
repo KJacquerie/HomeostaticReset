@@ -6,5 +6,9 @@ All the data is gathered with **Julia (.jl) files** and all the postprocessing/f
 
 #### Figures
 
-This folder contains details of the final figures as well as the datasheet for each plasticity model.
+This folder contains details of the final figures.
 
+
+#### Datasheet
+
+This folder contains the datasheet for each plasticity model (equations, parameters, reference and fit on exeperimental data) 
