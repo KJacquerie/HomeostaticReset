@@ -17,7 +17,11 @@ It shows the homeostatic reset for all models coded in soft-bounds weight depend
 It uses the function *function_plot_wtime_Supp.m* to generate the graph.
 > Resulting figures are available in the folder Fig_datasheet_reset.
 
+* *DEMO_SAT_simu.m*
+This code permits to compare and plot the slope of saturation computed on the simulation and the analytical solution in phenomenological models.
 
+* *DEMO_wSAT_simu.mat*
+It contains the variable and the parameters to compute the slope of saturation in phenomenological models.
 
 * *Fig1_plot_scenario.m*
 Matlab code to obtain Figure 1 providing the evolution of the synaptic weights in 6 circuits. 
