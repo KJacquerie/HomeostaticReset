@@ -64,7 +64,7 @@ const nIcells = 1    # Number of inhibitory cells
 const nPostcells = 3 # Number of excitatory cells
 const ncells = nPrecells+nIcells+nPostcells
 
-variab = 0.3
+variab = 0.2
 
 const k1vec_E = k1_E*ones(ncells)
 const k2vec_E = k2_E*ones(ncells)
@@ -78,8 +78,8 @@ const k2vec_C = k2_C*ones(ncells)
 gNavec_E = gNa_E*ones(ncells) #* (1 .-2*variab*(rand(Float64, (1, ncells)).-0.5)) #- 70*(rand(ncells)-0.5)
 gKdvec_E = gKd_E *ones(ncells)#* (1 .-2*variab*(rand(Float64, (1, ncells)).-0.5)) #- 40*(rand(ncells)-0.5)
 gHvec_E = gH_E*ones(ncells)# * (1 .-2*variab*(rand(Float64, (1, ncells)).-0.5))#- 0.002*(rand(ncells)-0.5)
-gCaTvec_E = gCaT_E .* [0.8, 1.5, 1.6, 0, 0, 0]  #(1 .-2*variab*(rand(Float64, (1, ncells)).-0.5))#- 0.35*(rand(ncells)-0.5)
-gKCavec_E = gKCa_E .* [0.8, 1.5, 1.6, 0, 0, 0] #(1 .-2*variab*(rand(Float64, (1, ncells)).-0.5)) #- 2*(rand(ncells)-0.5)
+gCaTvec_E = gCaT_E .* (1 .-2*variab*(rand(Float64, (1, ncells)).-0.5))  #(1 .-2*variab*(rand(Float64, (1, ncells)).-0.5))#- 0.35*(rand(ncells)-0.5)
+gKCavec_E = gKCa_E .* (1 .-2*variab*(rand(Float64, (1, ncells)).-0.5))  #(1 .-2*variab*(rand(Float64, (1, ncells)).-0.5)) #- 2*(rand(ncells)-0.5)
 glvec_E = gl_E*ones(ncells) #* (1 .-2*variab*(rand(Float64, (1, ncells)).-0.5))#- 0.015*(rand(ncells)-0.5)
 
 gNavec_I = gNa_I*ones(ncells) #* (1 .-2*variab*(rand(Float64, (1, ncells)).-0.5))#- 70*(rand(ncells)-0.5)
@@ -183,7 +183,6 @@ IBF_hyperpol1 = zeros(ncells,n_net)
 freq_depol_vec1 = zeros(ncells,n_net)
 freq_hyperpol_vec1 = zeros(ncells,n_net)
 
-
 @time (Vconnect_spk, w_) = simulateTOY_ncells(ncells,nPrecells,nPostcells,IappE,IappI,tstepEinit,tstepEfinal,IstepE,tstepIinit1,tstepIinit2,tstepIinit3,tstepIinit4,tstepIfinal,IstepI1,IstepI2,IstepI3,IstepI4,gAMPA, gGABAA_vec, gGABAB_vec, w_mat)
 
 nEcells=nPrecells
@@ -240,7 +239,7 @@ plot(t, w_[:,1])
 
 ##
 
-writedlm("/Users/kathleen/Documents/PhD/2022-NMOD/Network_heterogeneousBIG/trace/Vconnect.dat", Vconnect, header = false)
+writedlm("/Users/kathleen/Documents/PhD/2022-NMOD/Network_heterogeneousBIG/trace/Vconnec_spk.dat", Vconnect, header = false)
 writedlm("/Users/kathleen/Documents/PhD/2022-NMOD/Network_heterogeneousBIG/trace/w.dat", w_, header = false)
 writedlm("/Users/kathleen/Documents/PhD/2022-NMOD/Network_heterogeneousBIG/trace/gCaTvec_E.dat", gCaTvec_E, header = false)
 writedlm("/Users/kathleen/Documents/PhD/2022-NMOD/Network_heterogeneousBIG/trace/gCaTvec_C.dat", gCaTvec_C, header = false)
