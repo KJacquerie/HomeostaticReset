@@ -54,16 +54,24 @@ It computes the mean of the synaptic weight evolution computed in 10 circuits wi
 It uses the data from the Julia .jl files/Network_heterogeneous/traceX (X indicates the number of the considered network).
 --> Resulting figures are available in Fig3/Fig3_ntk.
 
+* *Folder Fig 4*
+display_correlation.m: plot the correlation matrix
+Fig4_scatter.m: display the scatter plot. 
+scatter_simuvspredict.m: function to retrieve the simulated value of the reset or the predicted value.
+
 * *Fig4_wtime_burst *
+[appendix figure]
 Function to obtain the homeostatic reset and the saturation curve shown in Figure 4.
 It uses the function *function_plot_wtime_Oneline.m* to display only one curve (from the Figure 3). 
 --> Resulting figures are available in Fig4
 
 * * Fig4_temporel_calcium.m*
+[appendix figure]
 Function to obtain the zoom of the calcium traces as well as a zoom in the synaptic weight evolution to explain intuitively the homeostatic reset mechanism in calcium-based models.
 --> It saves the resulting figures in Fig4
 
 * *Fig4_temporel_phenom.m*
+[appendix figure]
 Function to obtain the zoom of the pre and postsynaptic traces as well as a zoom in the synaptic weight evolution to explain intuitively the homeostatic reset mechanism in phenomenological models.
 --> It saves the resulting figures in Fig4
 

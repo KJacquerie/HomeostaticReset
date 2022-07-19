@@ -35,33 +35,76 @@ dGABAA(V::Float64,GABAA::Float64) = (dt)*(0.53*Tm(V)*(1-GABAA)-0.18*GABAA)
 dGABAB(V::Float64,GABAB::Float64) = (dt)*(0.016*Tm(V)*(1-GABAB)-0.0047*GABAB)
 
 
-#=
 function dx(x::Float64, V::Float64, Vprev::Float64)
   (dt)*-x/tau_p + 1*(Vprev<= 0 && V >0)
-end
-
-function dx2(x::Float64, V::Float64, Vprev::Float64)
-  (dt)*-x/tau_x + 1*(Vprev<= 0 && V >0)
 end
 
 function dy(y::Float64, V::Float64, Vprev::Float64)
   (dt)*-y/tau_m + 1*(Vprev<= 0 && V >0)
 end
 
-function dy2(y::Float64, V::Float64, Vprev::Float64)
-  (dt)*-y/tau_y + 1*(Vprev<= 0 && V >0)
-end
-
-
 function dw(new::Float64, w::Float64, tau::Float64)
   (dt)*(new - w)*1/tau
 end
-=#
 
-function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,IappE::Float64,IappI::Float64,TstepEinit::Int64,TstepEfinal::Int64,IstepE::Float64,TstepIinit1::Int64,TstepIinit2::Int64,TstepIinit3::Int64,TstepIinit4::Int64,TstepIfinal::Int64,IstepI1::Float64,IstepI2::Float64,IstepI3::Float64,IstepI4::Float64,gAMPA::Float64, gGABAA, gGABAB, wmat)
+
+function get_Iapp(T, dt, neurons_freq, spike_duration)
+#= -----------------------------------------------------------------------------
+Arguments:
+    ->  T : simulation time in ms
+    ->  dt : time step in ms
+    ->  neurons_freq : spiking frequencies of neurons. neurons_freq[i] gives the
+        spiking frequency of neuron i
+    ->  spike_duration: duration of a spike in ms
+
+Return:
+    ->  Iapp : matrix nb_neurons-by-nb_time_step of Iapp
+----------------------------------------------------------------------------- =#
+    nb_neurons = size(neurons_freq)[1]
+    nb_steps = convert(Int64, round(T/dt))
+    Iapp = zeros(nb_neurons, nb_steps)
+
+    # Convert spike duration from ms to index
+    spike_duration = convert(Int64, round(spike_duration/dt))
+
+    # Generate Iapp
+    for (neuron_idx, freq) in enumerate(neurons_freq)
+        # Compute spike period in index
+        spike_period = convert(Int64, round(1000/(freq*dt)))
+        # Compute indices at which neurons spikes
+        spike_indices = collect(rand(1:spike_period):spike_period:nb_steps)
+        spike_std = 0.1 * spike_period
+        spike_indices_err =   convert(
+                                    Array{Int64,1},
+                                    broadcast(round, spike_std * randn(
+                                        size(spike_indices))))
+        spike_indices += spike_indices_err
+        spike_indices = broadcast(abs, spike_indices)
+        # Check if first index is not 0
+        if spike_indices[1] == 0
+            spike_indices[1] += 1
+        end
+
+        # Set Iapp to 50 when spiking
+        for spike_idx in spike_indices
+            up_val = min(nb_steps, spike_idx + spike_duration - 1)
+            interval = spike_idx:up_val
+            Iapp[neuron_idx, interval] = 50 * ones(size(interval))
+        end
+    end
+
+    return Iapp
+end
+
+
+function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,IappE::Float64,IappI::Float64,TstepEinit::Int64,TstepEfinal::Int64,IstepE::Float64,TstepIinit1::Int64,TstepIinit2::Int64,TstepIinit3::Int64,TstepIinit4::Int64,TstepIfinal::Int64,IstepI1::Float64,IstepI2::Float64,IstepI3::Float64,IstepI4::Float64,gAMPA, gGABAA, gGABAB, wmat, Iapp_true)
 
   # Initial conditions
-  println(wmat)
+  #println(wmat)
+  #pot_mat = zeros(nPostcells, nPrecells)
+  #dep_mat = zeros(nPostcells, nPrecells)
+  #nul_mat = zeros(nPostcells, nPrecells)
+
 
   V=-60*ones(ncells)
   Vprev=-60*ones(ncells)
@@ -76,20 +119,18 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
   GABAA=zeros(ncells)
   GABAB=zeros(ncells)
 
-##Plasticity parameters
-  #=
-  x = zeros(nPrecells)
-  x_prev = zeros(nPrecells)
-  y = zeros(nPostcells)
-  y_prev = zeros(nPostcells)
-  x2 = zeros(nPrecells)
-  x2_prev = zeros(nPrecells)
-  y2 = zeros(nPostcells)
-  y2_prev = zeros(nPostcells)
-  pre_spikes = zeros(nPrecells)
-  post_spikes = zeros(nPostcells)
-  =#
+  Spkt = zeros(ncells,T)
+  lncells::Array{Int64} = ones(ncells,1)
 
+##Plasticity parameters
+x = zeros(nPrecells)
+x_prev = zeros(nPrecells)
+y = zeros(nPostcells)
+y_prev = zeros(nPostcells)
+
+pre_spikes = zeros(nPrecells)
+post_spikes = zeros(nPostcells)
+#=
   cpre_var =zeros(nPrecells)
   cpre_prev=zeros(nPrecells)
   cpost_var = zeros(nPostcells)
@@ -99,14 +140,14 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
   event_post = zeros(nPostcells)
 
   ca_var =zeros(nPostcells, nPrecells)
-
+=#
 ##
 
 
-  VV = zeros(Tdt,ncells)
-  ww = zeros(Tdt,length(wmat))
-
-  Vold = zeros(convert(Int64, floor(D_pre/dt+1)),nPrecells)
+  #VV = zeros(Tdt,ncells)
+  ww = zeros(convert(Int64,Tdt*dt),length(wmat))
+  idx_w=1
+  #Vold = zeros(convert(Int64, floor(D_pre/dt+1)),nPrecells)
 
   # Step start and stop values
   TstartE::Int64 = convert(Int64,TstepEinit/dt)
@@ -124,15 +165,21 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
     #Isyn=zeros(ncells)
 
     for j = 1:ncells
+      ll = copy(lncells[j])
 
 ##Pre cells (E)
       if j<=nPrecells
+        #=
         Iapp = IappE
         if z >= TstartE && z<= TstopE
           Iappstep = IstepE
         else
           Iappstep = 0.
         end
+        =#
+        Iapp = Iapp_true[j,z]
+        Iappstep = 0.
+
         V[j] += dV(gNavec_E[j], gKdvec_E[j], glvec_E[j], V[j], mNa[j], hNa[j], mKd[j], mCaT[j], hCaT[j], mH[j], Ca[j], Iapp, Iappstep, gCaTvec_E[j], gHvec_E[j], gKCavec_E[j])
         Ca[j] += dCa(Vprev[j],mCaT[j],hCaT[j],Ca[j],gCaTvec_E[j],k1vec_E[j], k2vec_E[j])
       end
@@ -140,12 +187,17 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
 
 ## Post cells (C)
       if j>nPrecells && j<ncells
+        #=
         Iapp = IappC
         if z >= TstartC && z<= TstopC
           Iappstep = IstepC
         else
           Iappstep = 0.
         end
+        =#
+        Iapp = Iapp_true[j,z]
+        Iappstep = 0.
+
         V[j] += dV(gNavec_C[j], gKdvec_C[j], glvec_C[j], V[j], mNa[j], hNa[j], mKd[j], mCaT[j], hCaT[j], mH[j], Ca[j], Iapp, Iappstep, gCaTvec_C[j], gHvec_C[j], gKCavec_C[j])
         Ca[j] += dCa(Vprev[j],mCaT[j],hCaT[j],Ca[j],gCaTvec_C[j],k1vec_C[j], k2vec_C[j])
       end
@@ -154,6 +206,7 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
 ## I Cells (I)
 
       if j==ncells
+        #=
         Iapp = IappI
         if z >= TstartI1 && z< TstartI2
           Iappstep = IstepI1
@@ -166,6 +219,9 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
         else
           Iappstep = 0.
         end
+        =#
+        Iapp = Iapp_true[j,z]
+        Iappstep = 0.
         V[j] += dV(gNavec_I[j], gKdvec_I[j], glvec_I[j], V[j], mNa[j], hNa[j], mKd[j], mCaT[j], hCaT[j], mH[j], Ca[j], Iapp, Iappstep, gCaTvec_I[j], gHvec_I[j], gKCavec_I[j])
         Ca[j] += dCa(Vprev[j],mCaT[j],hCaT[j],Ca[j],gCaTvec_I[j],k1vec_I[j], k2vec_I[j])
       end
@@ -176,7 +232,7 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
             #Isyn[j] += gGABAA[j]*GABAA[ncells]*(Vprev[j]+70)+gGABAB[j]*GABAB[ncells]*(Vprev[j]+85)
             V[j] += (dt)*(1/C)*(-gGABAA[j]*GABAA[ncells]*(Vprev[j]+70))
             V[j] += (dt)*(1/C)*(-gGABAB[j]*GABAB[ncells]*(Vprev[j]+85))
-
+            #=
             if(z> (D_pre/dt+1) )
               if(Vold[end-1,j]>=0 && Vold[end,j]<0)
                 event_pre[j]=1.
@@ -188,7 +244,7 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
             Vold[1,j] = copy(V[j])
 
             cpre_var[j] +=(dt)*(1)*(-cpre_prev[j]/tau_Ca) +event_pre[j]*C_Pre
-
+            =#
 
       end
 
@@ -199,8 +255,9 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
           V[j] += (dt)*(1/C)*(-gGABAB[j]*GABAB[ncells]*(Vprev[j]+85))
           for k=1:nPrecells
               #Isyn[j]+= gAMPA*wmat[j-nPrecells,k]*AMPA[k]*(Vprev[j]-0)
-              V[j] += (dt)*(1/C)*(-gAMPA*wmat[j-nPrecells,k]*AMPA[k]*(Vprev[j]-0))
+              V[j] += (dt)*(1/C)*(-gAMPA[j-nPrecells, k]*wmat[j-nPrecells,k]*AMPA[k]*(Vprev[j]-0))
           end
+          #=
 
           if(V[j]>=0. && Vprev[j]<0.)
             event_post[j-nPrecells]=1.
@@ -210,51 +267,50 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
           end
           cpost_var[j-nPrecells] += (dt)*(1)*(-cpost_prev[j-nPrecells]/tau_Ca)+event_post[j-nPrecells]*C_Post
 
-
+          =#
       end
 
 ## Plasticity
-  #=
+if(z>Ttransient)
       if (j <=nPrecells)
 
         pre_spikes[j]=0
         x_prev[j] = x[j]
         x[j] += dx(x[j], V[j], Vprev[j])
-        x2_prev[j] = x2[j]
-        x2[j] += dx2(x2[j], V[j], Vprev[j])
         if (V[j] >= 0 && Vprev[j]< 0)
           pre_spikes[j] = 1  #Pré en dernier
         end
 
       end
-      =#
 
-      #=
       if(j>nPrecells && j< ncells)
 
         post_spikes[j-nPrecells]=0
 
         y_prev[j-nPrecells] = y[j-nPrecells]
         y[j-nPrecells] += dy(y[j-nPrecells], V[j], Vprev[j])
-        y2_prev[j-nPrecells] = y2[j-nPrecells]
-        y2[j-nPrecells] += dy2(y2[j-nPrecells], V[j], Vprev[j])
+
         if (V[j] >= 0 && Vprev[j]< 0)
           post_spikes[j-nPrecells] = 1 #Post en dernier
         end
       end
-      =#
 
 
+
+      #=
       if (j>nPrecells && j< ncells)
 
-        if(z>TstartI1)
+        if(z>Ttransient)
           #println("here")
           for k=1:nPrecells
             if(ca_var[j-nPrecells, k]>= theta_p)
+              pot_mat[j-nPrecells,k] +=1
               wmat[j-nPrecells, k] +=(dt)*(1/tauw_p)*(Omega_p - wmat[j-nPrecells, k])
             elseif(ca_var[j-nPrecells, k]>=theta_d && ca_var[j-nPrecells, k]<theta_p)
+              dep_mat[j-nPrecells,k] +=1
               wmat[j-nPrecells, k] +=(dt)*(1/tauw_d)*(Omega_d - wmat[j-nPrecells, k])
             else
+              nul_mat[j-nPrecells,k] +=1
               wmat[j-nPrecells, k] +=(dt)*0.
             end
             ca_var[j-nPrecells, k] = cpre_prev[k] + cpost_prev[j-nPrecells]
@@ -263,16 +319,16 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
         end
         cpost_prev[j-nPrecells] = cpost_var[j-nPrecells]
       end
+      =#
 
 
-      #=
       if (j>nPrecells && j< ncells)
         for k=1:nPrecells
           if pre_spikes[k] == 1
             if SB == 0
-              new = -y_prev[j-nPrecells]*A2_m  + wmat[j-nPrecells,k]
+              new = -y_prev[j-nPrecells]*Am  + wmat[j-nPrecells,k]
             else
-              new = -y_prev[j-nPrecells]*wmat[j-nPrecells,k]*A2_m  + wmat[j-nPrecells,k]
+              new = -y_prev[j-nPrecells]*Am* wmat[j-nPrecells,k]  + wmat[j-nPrecells,k]
             end
             wmat[j-nPrecells,k] = new
             if (wmat[j-nPrecells,k] > wMax)
@@ -285,15 +341,15 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
           end
         end
       end
-      =#
-      #=
+
+
       if (j<=nPrecells)
         for k=1:nPostcells
           if post_spikes[k] == 1
             if SB == 0
-              new = x_prev[j]*(A2_p+ A3_p*y2_prev[j]) + wmat[k,j]
+              new = x_prev[j]*Ap + wmat[k,j]
             else
-              new = x_prev[j]*(1-wmat[k,j])*(A2_p+ A3_p*y2_prev[j]) + wmat[k,j]
+              new = x_prev[j]*(1-wmat[k,j])*Ap + wmat[k,j]
             end
             wmat[k,j] = new
             if (wmat[k,j] > wMax)
@@ -306,8 +362,7 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
           end
         end
       end
-      =#
-
+end
 
 ##
 
@@ -324,17 +379,25 @@ function simulateTOY_ncells(ncells::Int64,nPrecells::Int64,nPostcells::Int64,Iap
       GABAA[j] += dGABAA(Vprev[j],GABAA[j])
       GABAB[j] += dGABAB(Vprev[j],GABAB[j])
 
-      Vprev = copy(V)
+      if Vprev[j] < -20. && V[j] >= -20.
+          Spkt[j,ll] = t[z]
+          lncells[j] += 1
+      end
 
+      Vprev = copy(V)
 
     end
 
-    VV[z,:] = copy(V')
+    #VV[z,:] = copy(V')
 
-    for i=1:length(wmat)
-      ww[z,i] = wmat[i]
+    if(mod(z,1/dt)==0)
+      for idx_fill=1:length(wmat)
+        ww[idx_w,idx_fill] = wmat[idx_fill]
+      end
+      idx_w+=1
     end
 
   end
-  return VV, ww
+  #tot = Tdt - Ttransient
+  return Spkt, ww#, pot_mat, dep_mat, nul_mat, tot
 end

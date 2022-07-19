@@ -21,7 +21,7 @@ end
 
 function isbursting(ISI::Array{Float64})   # Check if the neuron is bursting using the rule 3*minISI < maxISI
   bursting::Int64 = 0
-  if minimum(ISI)*4 < maximum(ISI)
+  if minimum(ISI)*3 < maximum(ISI)
       bursting = 1
   end
   return bursting

@@ -65,8 +65,8 @@ Note: j=1-> presynaptic cell ; j = 2-> inhibitory cell ; j = 3-> postsynaptic ce
 * *Simu_STDP_..* and *model_STDP_..* used for **Figure 2C** (reproducing the experimental pairing protocol of Bi and Poo, 1998)
 * *Simu_SJO_..* and *model_SJO_..* used for **Figure 2C** (reproducing the experimental pairing protocol of Sjöström et. al., 2001)
 * *Simu_BurstMAT_..* and *model_BurstMAT_..* for **Figure 3A** (simulating the homeostatic reset and saturation for each plasticity rule. Note that for phenomenological models (pair-based and triplet) hard bounds and soft bounds are applied with parameter SB = 0 and SB = 1. )
-* *Simu_????????????_..* and *model_STDP_..* for **Figure 3B** (simulating 10 different networks with different ionic conductances (10% variability) for each cell.) 
-* *Simu_network* and *model_network* for **Figure 3C** (simulating a 6cells feedforward network with 3 presynaptic cells connected to 3 postsynaptic cells governed by the same inhibitory cell. All initial synaptic weights between pre-post cells are randomly initialized and cells show 30% variability in their $g_{CaT}$ and $g_{KCa} conductances.)
+* *Simu_Variability_..* and *model_BurstMAT_..* for **Figure 3B** (simulating 10 different networks with different ionic conductances (10% variability) for each cell.) 
+* *Simu_network* and *model_network* for **Figure 3C** (simulating a 200cells feedforward network with 100 presynaptic cells connected to 100 postsynaptic cells governed by the same inhibitory cell. All initial synaptic weights between pre-post cells are randomly initialized and cells show 20% variability in their $g_{CaT}$ and $g_{KCa} conductances.)
 
 ## Models used
 
