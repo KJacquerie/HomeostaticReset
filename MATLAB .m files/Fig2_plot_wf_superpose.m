@@ -18,9 +18,9 @@ f=[0.1; 1; 5; 10; 15; 20; 25; 30; 35; 40; 45;  50];
 
 load('Sjo.mat')
 
-NB_models=14; 
+NB_models=12; 
 m_wpos = zeros(length(f),NB_models); 
-m_wneg = zeros(length(f),14);
+m_wneg = zeros(length(f),NB_models);
 
 
 %% Model 1
@@ -171,4 +171,5 @@ print('/Users/kathleen/Documents/PhD/2022-reset/Fig2/SUPERPOSITION_wf','-depsc',
 
 
 print('/Users/kathleen/Documents/PhD/2022-reset/Fig2/SUPERPOSITION_wf','-dsvg')%, '-painters')
+
 
