@@ -68,6 +68,14 @@ Note: j=1-> presynaptic cell ; j = 2-> inhibitory cell ; j = 3-> postsynaptic ce
 * *Simu_Variability_..* and *model_BurstMAT_..* for **Figure 3B** (simulating 10 different networks with different ionic conductances (10% variability) for each cell.) 
 * *Simu_network* and *model_network* for **Figure 3C** (simulating a 200cells feedforward network with 100 presynaptic cells connected to 100 postsynaptic cells governed by the same inhibitory cell. All initial synaptic weights between pre-post cells are randomly initialized and cells show 20% variability in their $g_{CaT}$ and $g_{KCa} conductances.)
 
+* *Folder fig5*
+It contains two folders for phenomenological rule (pair-based) and calcium-based rule (model 3). 
+Each folder contains the julia code to obtain data for Fig 5.
+init (for phenom) | omega_winit(for calcium): the parameters are neuromodulated and tag-dependent
+low (for phenom) | omegaLOW (for caclium): the potentiation/depression parameters are downscaled
+norma (for phenom) | omega (for calcium)l: the parameters are unchanged
+tau (for phenom and calcium): the time constant are neuromodulated
+
 ## Models used
 
 Except the scenario codes for **Figure 1B** and network codes for **Figure 3C**, all .jl files are sorted by their model types : 

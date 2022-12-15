@@ -75,6 +75,12 @@ Function to obtain the zoom of the calcium traces as well as a zoom in the synap
 Function to obtain the zoom of the pre and postsynaptic traces as well as a zoom in the synaptic weight evolution to explain intuitively the homeostatic reset mechanism in phenomenological models.
 --> It saves the resulting figures in Fig4
 
+* *Fig5_wtime.m*
+Function to obtain the homeostatic reset and the saturation curve shown in Figure 5.
+It uses the function *function_plot_wtimeFENS.m* to display only one curve. 
+--> Resulting figures are available in Fig5
+
+
 * *SI_plot_Vburst.m*
 Function to provide the membrane potential evolution for 8 different levels of NMOD.
 --> It saves the resulting figures in Fig_SI
