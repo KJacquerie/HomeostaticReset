@@ -69,12 +69,14 @@ Note: j=1-> presynaptic cell ; j = 2-> inhibitory cell ; j = 3-> postsynaptic ce
 * *Simu_network* and *model_network* for **Figure 3C** (simulating a 200cells feedforward network with 100 presynaptic cells connected to 100 postsynaptic cells governed by the same inhibitory cell. All initial synaptic weights between pre-post cells are randomly initialized and cells show 20% variability in their $g_{CaT}$ and $g_{KCa} conductances.)
 
 * *Folder fig5*
-It contains two folders for phenomenological rule (pair-based) and calcium-based rule (model 3). 
+It contains two folders for phenomenological rule (pair-based) and calcium-based rule (model 2). 
 Each folder contains the julia code to obtain data for Fig 5.
-init (for phenom) | omega_winit(for calcium): the parameters are neuromodulated and tag-dependent
-low (for phenom) | omegaLOW (for caclium): the potentiation/depression parameters are downscaled
-norma (for phenom) | omega (for calcium)l: the parameters are unchanged
-tau (for phenom and calcium): the time constant are neuromodulated
+Ampl: the potentiation/depression parameters are downscaled
+Ampl_TAG: the depression/potentiation parameters are neuromodulated and tag-dependent
+normal: the parameters are unchanged
+tau: the time constants are neuromodulated
+tau_TAG: the time constnats are neuromodulated and tag-dependent.
+The folder scenario is used to generate the data associated to the traces of the 6 circuits with correlated and uncorrelated activity in two situations: _NMOD (the synaptic rule is only neuromodulated) and _TAG (the synaptic rule is neuromodulated and tag-dependent). 
 
 ## Models used
 

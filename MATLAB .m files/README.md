@@ -77,8 +77,12 @@ Function to obtain the zoom of the pre and postsynaptic traces as well as a zoom
 
 * *Fig5_wtime.m*
 Function to obtain the homeostatic reset and the saturation curve shown in Figure 5.
-It uses the function *function_plot_wtimeFENS.m* to display only one curve. 
+It uses the function *function_plot_wtime_NMOD.m* to display only one curve in superposition with the initial traces shown in Figure 3. 
+It calls the function *function_plot_wtime_TAG.m* to show the results associated to the neuromodulated and tag-dependent plasticity. 
 --> Resulting figures are available in Fig5
+
+* *Fig5_scenario_NMOD.m*
+Function to obtain the evolution of the synaptic traces of the 6 circuits with correlated and uncorrelated activity when the synaptic plasticity rule is neuromodulated (TAG=0) or tag-dependent (TAG=1). You just need to change the value of TAG to generate one or the other result. 
 
 
 * *SI_plot_Vburst.m*
