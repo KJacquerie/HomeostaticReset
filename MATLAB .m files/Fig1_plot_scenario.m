@@ -5,6 +5,9 @@ clc
 set(groot, 'defaultAxesTickLabelInterpreter','latex'); 
 set(groot, 'defaultLegendInterpreter','latex');
 
+
+
+
 %%
 % idx from 1 to 3 corresponds to correlated inputs > idx=2
 % idx from 4 to 6 corresponds to uncorrelated inputs > idx = 6

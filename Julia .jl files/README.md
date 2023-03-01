@@ -68,6 +68,10 @@ Note: j=1-> presynaptic cell ; j = 2-> inhibitory cell ; j = 3-> postsynaptic ce
 * *Simu_Variability_..* and *model_BurstMAT_..* for **Figure 3B** (simulating 10 different networks with different ionic conductances (10% variability) for each cell.) 
 * *Simu_network* and *model_network* for **Figure 3C** (simulating a 200cells feedforward network with 100 presynaptic cells connected to 100 postsynaptic cells governed by the same inhibitory cell. All initial synaptic weights between pre-post cells are randomly initialized and cells show 20% variability in their $g_{CaT}$ and $g_{KCa} conductances.)
 
+* *Folder fig1A_LFP*
+It contains the code *Simu_scenario_LFP.jl* and *model_scenario_LFP.jl*. By running these codes, it computes the membrane potential in a network of 6 presynaptic neurons connected to 6 postsynaptic neurons. All of them receive an inhibitory current from the inhibitory cell. The code saves the recording in a .dat file in the results_LFP folder. The LFP is obtained as the average excitatory postsynaptic current. 
+
+
 * *Folder fig5*
 It contains two folders for phenomenological rule (pair-based) and calcium-based rule (model 2). 
 Each folder contains the julia code to obtain data for Fig 5.
